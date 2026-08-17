@@ -1,0 +1,29 @@
+# Reticulum config for the bridge's STANDALONE RNS instance (its own identity).
+# Kept deliberately separate from any rnsd "shared instance" -- see the app
+# docstring / README for why that matters for inbound LXMF.
+[reticulum]
+  enable_transport = No
+  share_instance = No
+  instance_name = meshtastic_reticulum_bridge
+
+[logging]
+  loglevel = 4
+
+[interfaces]
+
+  # Peers with any Reticulum node on the same LAN over IPv6 link-local multicast.
+  # No device/group pinned -> uses the defaults, which "just works" on a normal
+  # host. Set `devices` and/or a shared `group_id` if you run multiple Reticulum
+  # processes/segments and need them to line up.
+  [[Default LAN Interface]]
+    type = AutoInterface
+    interface_enabled = True
+
+  # Optional internet backstop so the bridge reaches the wider Reticulum network
+  # even without local multicast. Uncomment and point at a transport node you
+  # trust (your own, or a public community hub).
+  # [[Internet Backstop]]
+  #   type = TCPClientInterface
+  #   interface_enabled = True
+  #   target_host = amsterdam.connect.reticulum.network
+  #   target_port = 4965

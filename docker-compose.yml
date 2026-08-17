@@ -1,0 +1,53 @@
+# meshtastic-reticulum-bridge: a self-contained stack.
+#
+#   mosquitto  -- MQTT broker your Meshtastic node uplinks to (point the node's
+#                 MQTT server at THIS_HOST:1883, topic root "msh", uplink on).
+#   bridge     -- subscribes to the broker, decodes Meshtastic protobufs, and
+#                 forwards text messages into Reticulum as LXMF.
+#
+# The bridge runs `network_mode: host` because Reticulum's AutoInterface needs
+# the host's real NIC for IPv6 link-local multicast; that also lets it reach the
+# broker on 127.0.0.1:1883. Copy .env.example to .env and set TARGET_LXMF_HASH
+# (the LXMF destination that should receive the messages), then: docker compose up -d
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: meshtastic-bridge-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"          # your Meshtastic node points its MQTT server here
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+
+  bridge:
+    build: .
+    image: meshtastic-reticulum-bridge:local
+    container_name: meshtastic-reticulum-bridge
+    restart: unless-stopped
+    network_mode: host        # required for Reticulum AutoInterface multicast
+    depends_on:
+      - mosquitto
+    environment:
+      RNS_CONFIG_DIR: "/config/rns"
+      STORAGE_DIR: "/config"
+      IDENTITY_PATH: "/config/identity/bridge_identity"
+      DB_PATH: "/config/app/state.db"
+      DISPLAY_NAME: "${DISPLAY_NAME:-Meshtastic Bridge}"
+      LISTEN_PORT: "${LISTEN_PORT:-8212}"          # small status/health HTTP surface
+      # REQUIRED: the LXMF delivery destination that should receive the messages.
+      TARGET_LXMF_HASH: "${TARGET_LXMF_HASH:?set TARGET_LXMF_HASH in .env}"
+      # OPTIONAL: an LXMF propagation node for store-and-forward when the target
+      # isn't directly reachable.
+      PROPAGATION_NODE_HASH: "${PROPAGATION_NODE_HASH:-}"
+      # MQTT: defaults match the bundled broker (anonymous, topic root "msh").
+      MQTT_HOST: "${MQTT_HOST:-127.0.0.1}"
+      MQTT_PORT: "${MQTT_PORT:-1883}"
+      MQTT_USERNAME: "${MQTT_USERNAME:-}"
+      MQTT_PASSWORD: "${MQTT_PASSWORD:-}"
+      MQTT_TOPIC_ROOT: "${MQTT_TOPIC_ROOT:-msh}"
+    volumes:
+      - bridge_data:/config
+      - ./config/rns-config:/config/rns/config:ro
+
+volumes:
+  bridge_data:
