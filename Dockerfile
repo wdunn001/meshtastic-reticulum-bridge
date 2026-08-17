@@ -1,4 +1,4 @@
-# meshtastic-reticulum-bridge -- Meshtastic MQTT -> Reticulum/LXMF, one-way v1.
+# meshtastic-reticulum-bridge -- Meshtastic MQTT <-> Reticulum/LXMF, two-way v2.
 FROM python:3.12-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*

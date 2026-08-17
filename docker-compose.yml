@@ -45,6 +45,17 @@ services:
       MQTT_USERNAME: "${MQTT_USERNAME:-}"
       MQTT_PASSWORD: "${MQTT_PASSWORD:-}"
       MQTT_TOPIC_ROOT: "${MQTT_TOPIC_ROOT:-msh}"
+      # DOWNLINK (Reticulum -> Meshtastic): on by default. Key/hash/topic for the
+      # default channel are auto-learned from uplink traffic; override for a
+      # custom-PSK channel. Needs a gateway node with "Downlink enabled".
+      ENABLE_DOWNLINK: "${ENABLE_DOWNLINK:-true}"
+      DOWNLINK_CHANNEL: "${DOWNLINK_CHANNEL:-LongFast}"
+      DOWNLINK_PSK: "${DOWNLINK_PSK:-}"
+      DOWNLINK_TOPIC_PREFIX: "${DOWNLINK_TOPIC_PREFIX:-}"
+      DOWNLINK_CHANNEL_HASH: "${DOWNLINK_CHANNEL_HASH:-}"
+      DOWNLINK_HOP_LIMIT: "${DOWNLINK_HOP_LIMIT:-3}"
+      DOWNLINK_MAX_BYTES: "${DOWNLINK_MAX_BYTES:-200}"
+      BRIDGE_NODE_NUM: "${BRIDGE_NODE_NUM:-}"
     volumes:
       - bridge_data:/config
       - ./config/rns-config:/config/rns/config:ro
